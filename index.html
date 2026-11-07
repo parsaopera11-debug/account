@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#05070f" />
+<title>X.VPN — پنل مدیریت</title>
+<style>
+/* ===================== RESET & BASE ===================== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05070f;
+  --bg2:#080c18;
+  --card:rgba(16,22,40,.65);
+  --card-border:rgba(90,140,255,.15);
+  --blue:#3b8cff;
+  --blue-neon:#4f9dff;
+  --purple:#8a5cff;
+  --cyan:#38e6ff;
+  --green:#22e39a;
+  --red:#ff4d6d;
+  --text:#eaf1ff;
+  --muted:#8a97b8;
+  --radius:20px;
+  --font:'Vazirmatn','Segoe UI',Tahoma,sans-serif;
+}
+@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:400;font-display:swap;src:local('Vazirmatn'),url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');}
+@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:600;font-display:swap;src:local('Vazirmatn'),url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-SemiBold.woff2') format('woff2');}
+@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:700;font-display:swap;src:local('Vazirmatn'),url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');}
+html,body{height:100%;overflow-x:hidden}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(900px 600px at 85% -10%, rgba(79,157,255,.18), transparent 60%),
+    radial-gradient(700px 500px at -10% 20%, rgba(138,92,255,.18), transparent 60%),
+    radial-gradient(600px 500px at 50% 120%, rgba(56,230,255,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+::selection{background:rgba(79,157,255,.35)}
+/* grid backdrop */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(90,140,255,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(90,140,255,.06) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 75%);
+  -webkit-mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 75%);
+}
+/* floating blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.5;pointer-events:none;z-index:0;animation:float 18s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#1f4fff;top:-120px;right:-100px}
+.blob.b2{width:300px;height:300px;background:#7a2cff;bottom:-120px;left:-100px;animation-delay:-6s}
+.blob.b3{width:220px;height:220px;background:#00d0ff;top:40%;left:60%;opacity:.28;animation-delay:-11s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.15)}}
+
+/* ===================== SCREENS ===================== */
+.screen{position:fixed;inset:0;z-index:5;display:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.screen.active{display:block;animation:screenIn .55s cubic-bezier(.22,.9,.3,1)}
+@keyframes screenIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.screen.leaving{animation:screenOut .4s forwards}
+@keyframes screenOut{to{opacity:0;transform:translateY(-14px)}}
+
+/* ===================== SPLASH ===================== */
+#splash{display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#0a1330 0%,#05070f 60%)}
+#splash.active{display:flex}
+.splash-inner{display:flex;flex-direction:column;align-items:center;gap:34px;position:relative;z-index:2;padding:24px}
+.logo-x{
+  position:relative;width:150px;height:150px;display:grid;place-items:center;
+  animation:logoPop 1s cubic-bezier(.2,.9,.3,1.2) both;
+}
+@keyframes logoPop{0%{opacity:0;transform:scale(.4) rotate(-30deg)}60%{opacity:1;transform:scale(1.08) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.logo-x svg{width:100%;height:100%;filter:drop-shadow(0 0 24px rgba(79,157,255,.9)) drop-shadow(0 0 60px rgba(138,92,255,.55));animation:logoGlow 2.6s ease-in-out infinite}
+@keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 18px rgba(79,157,255,.8)) drop-shadow(0 0 44px rgba(138,92,255,.4))}50%{filter:drop-shadow(0 0 34px rgba(56,230,255,1)) drop-shadow(0 0 80px rgba(138,92,255,.7))}}
+.logo-x::before{
+  content:"";position:absolute;inset:-24px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent,rgba(79,157,255,.55),transparent 40%,rgba(138,92,255,.55),transparent 75%);
+  filter:blur(10px);animation:spin 3.4s linear infinite;opacity:.85;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.splash-title{font-size:30px;font-weight:700;letter-spacing:3px;background:linear-gradient(90deg,#8ec5ff,#b79bff,#7ef0ff);-webkit-background-clip:text;background-clip:text;color:transparent;animation:fadeUp .9s .25s both}
+.splash-sub{color:var(--muted);font-size:13px;letter-spacing:2px;animation:fadeUp .9s .4s both}
+.loading-bar{width:190px;height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;position:relative;animation:fadeUp .9s .55s both}
+.loading-bar span{position:absolute;inset:0;width:40%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--cyan));animation:loadSlide 1.2s ease-in-out infinite;box-shadow:0 0 14px var(--blue)}
+@keyframes loadSlide{0%{transform:translateX(140%)}100%{transform:translateX(-280%)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ===================== AUTH / WELCOME ===================== */
+#welcome,#configScreen{display:none;padding:28px 18px 40px}
+#welcome.active,#configScreen.active{display:flex;flex-direction:column;align-items:center}
+.auth-wrap{width:100%;max-width:480px;margin:auto;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;animation:fadeUp .6s both}
+.auth-logo{width:110px;height:110px;margin-bottom:14px;position:relative}
+.auth-logo svg{width:100%;height:100%;filter:drop-shadow(0 0 20px rgba(79,157,255,.8))}
+.auth-logo::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(79,157,255,.25);animation:pulseRing 2.4s ease-out infinite}
+@keyframes pulseRing{0%{transform:scale(.85);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.brand-name{font-size:28px;font-weight:700;letter-spacing:2px;background:linear-gradient(90deg,#8ec5ff,#b79bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-tag{color:var(--muted);font-size:13px;margin-top:6px;text-align:center;line-height:1.9}
+.enter-btn{
+  margin-top:30px;width:100%;max-width:340px;padding:18px 26px;border-radius:18px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff;font-size:17px;font-weight:700;letter-spacing:.5px;
+  position:relative;overflow:hidden;box-shadow:0 12px 40px -10px rgba(79,157,255,.8),0 0 0 1px rgba(255,255,255,.08) inset;
+  transition:transform .18s ease,box-shadow .3s ease;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.enter-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.35),transparent 70%);transform:translateX(-120%);animation:shine 3.4s ease-in-out infinite}
+@keyframes shine{0%,60%{transform:translateX(-120%)}80%,100%{transform:translateX(120%)}}
+.enter-btn:active{transform:scale(.97)}
+.enter-btn:hover{box-shadow:0 14px 46px -8px rgba(138,92,255,.9),0 0 0 1px rgba(255,255,255,.14) inset}
+.tech-deco{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.tech-deco i{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:twinkle 4s linear infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
+
+/* ===================== CONFIG FORM ===================== */
+.panel-card{
+  width:100%;max-width:480px;margin:0 auto;
+  background:linear-gradient(160deg,rgba(20,28,52,.78),rgba(10,15,30,.78));
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:24px 20px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.03) inset;
+  position:relative;z-index:2;animation:fadeUp .5s both;
+}
+.panel-card + .panel-card{margin-top:18px}
+.card-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.card-title .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue)}
+.card-desc{color:var(--muted);font-size:12.5px;line-height:1.9;margin-bottom:16px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:9px;color:#c9d6f5}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap textarea,.input-wrap input{
+  width:100%;background:rgba(6,10,22,.85);border:1.5px solid rgba(90,140,255,.18);
+  border-radius:14px;padding:14px 14px;color:var(--text);font-size:13px;
+  transition:border-color .25s,box-shadow .25s,background .25s;outline:none;
+  resize:vertical;
+}
+.input-wrap textarea{min-height:96px;line-height:1.7;padding-left:44px;direction:ltr;text-align:left;font-family:'Courier New',monospace;font-size:12px}
+.input-wrap input{padding-left:44px;direction:ltr;text-align:center;font-weight:700;letter-spacing:3px;font-size:16px}
+.input-wrap textarea:focus,.input-wrap input:focus{
+  border-color:var(--blue-neon);
+  box-shadow:0 0 0 3px rgba(79,157,255,.16),0 0 22px -4px rgba(79,157,255,.55);
+  background:rgba(8,14,30,.95);
+}
+.input-wrap textarea::placeholder,.input-wrap input::placeholder{color:#4d5a7a;letter-spacing:normal;direction:rtl;text-align:right}
+.input-wrap input::placeholder{text-align:center;letter-spacing:1px}
+.clear-btn{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:9px;display:grid;place-items:center;
+  background:rgba(255,255,255,.05);color:var(--muted);transition:.2s;
+}
+.clear-btn:hover{background:rgba(255,77,109,.18);color:#ff8aa0}
+.input-wrap textarea + .clear-btn{top:14px;transform:none}
+.input-hint{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:11.5px;color:var(--muted)}
+.input-hint.err{color:var(--red)}
+.counter{font-variant-numeric:tabular-nums}
+.counter.ok{color:var(--green)}
+.counter.bad{color:var(--red)}
+.primary-btn{
+  width:100%;padding:16px;border-radius:15px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff;font-size:15px;font-weight:700;
+  box-shadow:0 12px 32px -10px rgba(79,157,255,.85);
+  transition:transform .15s,box-shadow .25s,opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.primary-btn:active{transform:scale(.975)}
+.primary-btn:disabled{opacity:.55;cursor:not-allowed}
+.alert{
+  margin-top:14px;padding:13px 15px;border-radius:13px;font-size:13px;line-height:1.85;
+  display:none;align-items:flex-start;gap:10px;animation:shakeIn .45s;
+}
+.alert.show{display:flex}
+.alert.error{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.4);color:#ff9db0}
+.alert.success{background:rgba(34,227,154,.1);border:1px solid rgba(34,227,154,.4);color:#7cf0c4}
+.alert svg{flex-shrink:0;margin-top:2px}
+@keyframes shakeIn{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:none}}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-top:16px;transition:.2s}
+.back-link:hover{color:var(--blue-neon)}
+
+/* ===================== PROCESSING ===================== */
+#processing{display:none;background:rgba(5,7,15,.97)}
+#processing.active{display:flex;align-items:center;justify-content:center}
+.proc-wrap{width:100%;max-width:420px;padding:24px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
+.radar{position:relative;width:200px;height:200px;margin-bottom:32px}
+.radar .ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(79,157,255,.18)}
+.radar .ring:nth-child(2){inset:20px;border-color:rgba(138,92,255,.2)}
+.radar .ring:nth-child(3){inset:42px;border-color:rgba(56,230,255,.22)}
+.radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(79,157,255,.55),transparent 30%);animation:spin 1.8s linear infinite;mask-image:radial-gradient(circle,transparent 45%,#000 46%);-webkit-mask-image:radial-gradient(circle,transparent 45%,#000 46%)}
+.radar .core{position:absolute;inset:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 24px var(--cyan),0 0 48px var(--blue);animation:pulseDot 1.4s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.75}}
+.proc-msg{font-size:15px;font-weight:600;text-align:center;min-height:24px;margin-bottom:8px}
+.proc-pct{font-size:34px;font-weight:700;background:linear-gradient(90deg,#8ec5ff,#b79bff,#7ef0ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;margin-bottom:14px}
+.proc-bar{width:100%;height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:24px}
+.proc-bar span{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--cyan));box-shadow:0 0 16px var(--blue);transition:width .35s ease}
+.proc-steps{width:100%;display:flex;flex-direction:column;gap:10px}
+.proc-step{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);opacity:.4;transition:.4s}
+.proc-step.active{opacity:1;color:var(--text)}
+.proc-step.done{opacity:.85;color:var(--green)}
+.proc-step .tick{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;flex-shrink:0;font-size:10px}
+.proc-step.done .tick{background:var(--green);color:#04110b;border-color:var(--green)}
+.proc-step.active .tick{border-color:var(--blue-neon);box-shadow:0 0 12px var(--blue);animation:pulseDot 1.2s infinite}
+.proc-step.active .tick::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue-neon)}
+
+/* ===================== DASHBOARD ===================== */
+#dashboard{display:none;padding:16px 14px 40px}
+#dashboard.active{display:block}
+.dash{width:100%;max-width:520px;margin:0 auto;position:relative;z-index:2}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 18px}
+.top-brand{display:flex;align-items:center;gap:10px}
+.top-brand svg{width:34px;height:34px;filter:drop-shadow(0 0 10px rgba(79,157,255,.8))}
+.top-brand .nm{font-size:18px;font-weight:700;letter-spacing:1.5px;background:linear-gradient(90deg,#8ec5ff,#b79bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.top-brand .cfg{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:2px;direction:ltr;text-align:right}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:var(--muted);transition:.2s}
+.icon-btn:hover{color:var(--blue-neon);border-color:rgba(79,157,255,.4);background:rgba(79,157,255,.08)}
+.icon-btn.spin svg{animation:spin .8s linear infinite}
+
+.status-card{
+  background:linear-gradient(160deg,rgba(20,28,52,.85),rgba(10,15,30,.85));
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 24px 50px -22px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03) inset;
+  position:relative;overflow:hidden;margin-bottom:14px;
+}
+.status-card::before{content:"";position:absolute;top:-60%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(34,227,154,.18),transparent 70%);pointer-events:none}
+.status-row{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+.status-info{display:flex;flex-direction:column;gap:6px}
+.status-label{font-size:11.5px;color:var(--muted);letter-spacing:1px}
+.status-cfg{font-size:20px;font-weight:700;letter-spacing:3px;direction:ltr;text-align:right}
+.status-conn{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:rgba(34,227,154,.1);border:1px solid rgba(34,227,154,.35);font-size:12px;font-weight:600;color:var(--green);align-self:flex-start;margin-top:4px}
+.status-conn .pd{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulseDot 1.5s infinite}
+.status-badge{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:rgba(34,227,154,.08);border:1px solid rgba(34,227,154,.3);position:relative}
+.status-badge::after{content:"";position:absolute;inset:-6px;border-radius:22px;border:1px solid rgba(34,227,154,.25);animation:pulseRing 2.2s infinite}
+.status-badge svg{width:30px;height:30px;color:var(--green);filter:drop-shadow(0 0 10px rgba(34,227,154,.7))}
+
+/* Speed Gauge */
+.gauge-card{
+  background:linear-gradient(160deg,rgba(20,28,52,.85),rgba(10,15,30,.85));
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:22px 16px 20px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 24px 50px -22px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03) inset;
+  margin-bottom:14px;position:relative;overflow:hidden;
+}
+.gauge-card::before{content:"";position:absolute;bottom:-40%;left:-10%;width:220px;height:220px;background:radial-gradient(circle,rgba(79,157,255,.16),transparent 70%);pointer-events:none}
+.gauge-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.gauge-title{font-size:14px;font-weight:700}
+.gauge-sub{font-size:11px;color:var(--muted)}
+.gauge-wrap{position:relative;width:100%;display:flex;justify-content:center;padding-top:10px}
+.gauge-svg{width:100%;max-width:280px;height:auto;overflow:visible}
+.gauge-center{position:absolute;top:56%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.gauge-num{font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff,#9cc6ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px rgba(79,157,255,.5)}
+.gauge-unit{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+.gauge-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);padding:0 8px;margin-top:-8px}
+
+/* Refresh */
+.refresh-btn{
+  width:100%;padding:16px;border-radius:16px;margin-top:4px;
+  background:linear-gradient(135deg,rgba(79,157,255,.14),rgba(138,92,255,.14));
+  border:1.5px solid rgba(79,157,255,.35);color:var(--text);
+  font-size:14.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:.25s;position:relative;overflow:hidden;
+}
+.refresh-btn:hover{background:linear-gradient(135deg,rgba(79,157,255,.24),rgba(138,92,255,.24));box-shadow:0 0 26px -6px rgba(79,157,255,.6)}
+.refresh-btn:active{transform:scale(.98)}
+.refresh-btn:disabled{opacity:.7;cursor:wait}
+.refresh-btn svg{width:18px;height:18px;transition:transform .3s}
+.refresh-btn.loading svg{animation:spin 1s linear infinite}
+.refresh-hint{font-size:11.5px;color:var(--muted);line-height:1.9;text-align:center;margin-top:9px;padding:0 6px}
+
+/* generic section card */
+.sec-card{
+  background:linear-gradient(160deg,rgba(20,28,52,.8),rgba(10,15,30,.8));
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 24px 50px -22px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03) inset;
+  margin-bottom:14px;position:relative;overflow:hidden;
+}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(79,157,255,.12);border:1px solid rgba(79,157,255,.25);color:var(--blue-neon);flex-shrink:0}
+.sec-icon.purple{background:rgba(138,92,255,.12);border-color:rgba(138,92,255,.3);color:#b79bff}
+.sec-icon.cyan{background:rgba(56,230,255,.1);border-color:rgba(56,230,255,.28);color:var(--cyan)}
+.sec-icon.green{background:rgba(34,227,154,.1);border-color:rgba(34,227,154,.28);color:var(--green)}
+.sec-title{font-size:14.5px;font-weight:700}
+.sec-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.7}
+
+/* Location */
+.loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.loc-item{
+  padding:14px 6px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1.5px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;gap:7px;
+  transition:.25s;position:relative;overflow:hidden;
+}
+.loc-item .flag{font-size:26px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.loc-item .nm{font-size:11.5px;font-weight:600;color:#c9d6f5}
+.loc-item .nm-en{font-size:9.5px;color:var(--muted);letter-spacing:.5px}
+.loc-item:hover{border-color:rgba(79,157,255,.35)}
+.loc-item.active{
+  background:linear-gradient(160deg,rgba(79,157,255,.16),rgba(138,92,255,.1));
+  border-color:var(--blue-neon);
+  box-shadow:0 0 22px -4px rgba(79,157,255,.7),0 0 0 3px rgba(79,157,255,.08);
+}
+.loc-item.active .nm{color:#fff}
+.loc-item.active::after{content:"";position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--blue-neon);box-shadow:0 0 10px var(--blue-neon);animation:pulseDot 1.6s infinite}
+
+/* IP toggle */
+.ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ip-item{
+  padding:16px 12px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1.5px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:.25s;position:relative;
+}
+.ip-item svg{width:22px;height:22px;color:var(--muted);transition:.25s}
+.ip-item .nm{font-size:13px;font-weight:600;color:#c9d6f5}
+.ip-item .en{font-size:10px;color:var(--muted);letter-spacing:1px}
+.ip-item:hover{border-color:rgba(79,157,255,.35)}
+.ip-item.active{
+  background:linear-gradient(160deg,rgba(79,157,255,.16),rgba(138,92,255,.1));
+  border-color:var(--blue-neon);
+  box-shadow:0 0 22px -4px rgba(79,157,255,.7);
+}
+.ip-item.active svg{color:var(--blue-neon);filter:drop-shadow(0 0 8px var(--blue-neon))}
+.ip-item.active .nm{color:#fff}
+
+/* Users selector */
+.users-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.user-item{
+  padding:14px 4px;border-radius:13px;background:rgba(255,255,255,.03);
+  border:1.5px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;gap:5px;
+  transition:.25s;
+}
+.user-item .u-num{font-size:19px;font-weight:700;color:#c9d6f5;font-variant-numeric:tabular-nums}
+.user-item .u-lbl{font-size:9.5px;color:var(--muted)}
+.user-item:hover{border-color:rgba(79,157,255,.35)}
+.user-item.active{
+  background:linear-gradient(160deg,rgba(79,157,255,.18),rgba(138,92,255,.12));
+  border-color:var(--blue-neon);
+  box-shadow:0 0 20px -4px rgba(79,157,255,.75);
+  transform:translateY(-2px);
+}
+.user-item.active .u-num{color:#fff;text-shadow:0 0 14px rgba(79,157,255,.9)}
+.user-item.active .u-lbl{color:#9cc6ff}
+
+/* Apps */
+.app-list{display:flex;flex-direction:column;gap:9px}
+.app-row{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.06);
+  transition:.25s;
+}
+.app-row.blocked{background:linear-gradient(90deg,rgba(255,77,109,.08),rgba(255,77,109,.03));border-color:rgba(255,77,109,.3)}
+.app-ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;color:#fff;font-weight:700}
+.app-ico.ig{background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}
+.app-ico.yt{background:linear-gradient(135deg,#ff2e2e,#c00)}
+.app-ico.tw{background:linear-gradient(135deg,#9146ff,#6441a5)}
+.app-ico.tg{background:linear-gradient(135deg,#37aee2,#1e96c8)}
+.app-ico.ch{background:linear-gradient(135deg,#4285f4,#34a853)}
+.app-ico svg{width:19px;height:19px}
+.app-info{flex:1;min-width:0}
+.app-name{font-size:13.5px;font-weight:600}
+.app-status{font-size:11px;color:var(--muted);margin-top:2px;transition:.2s}
+.app-row.blocked .app-status{color:#ff9db0}
+.switch{position:relative;width:44px;height:25px;flex-shrink:0;border-radius:99px;background:rgba(255,255,255,.1);transition:.3s;cursor:pointer}
+.switch::after{content:"";position:absolute;top:2.5px;right:2.5px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.3s cubic-bezier(.2,.9,.3,1.3);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.switch.on{background:linear-gradient(90deg,var(--red),#ff2e5e);box-shadow:0 0 14px -2px rgba(255,77,109,.8)}
+.switch.on::after{transform:translateX(-19px)}
+
+/* Family Control */
+.fc-input-wrap{display:flex;gap:8px;margin-bottom:12px}
+.fc-input{
+  flex:1;background:rgba(6,10,22,.85);border:1.5px solid rgba(90,140,255,.18);
+  border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;outline:none;
+  transition:.25s;direction:ltr;text-align:left;
+}
+.fc-input:focus{border-color:var(--blue-neon);box-shadow:0 0 0 3px rgba(79,157,255,.15)}
+.fc-input::placeholder{direction:rtl;text-align:right;color:#4d5a7a}
+.fc-add{
+  padding:0 18px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff;font-size:13px;font-weight:700;transition:.2s;flex-shrink:0;
+  box-shadow:0 8px 20px -8px rgba(79,157,255,.8);
+}
+.fc-add:active{transform:scale(.96)}
+.fc-list{display:flex;flex-direction:column;gap:8px}
+.fc-empty{text-align:center;padding:20px 10px;color:var(--muted);font-size:12.5px;line-height:1.9;border:1.5px dashed rgba(255,255,255,.08);border-radius:13px}
+.fc-site{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.06);
+  animation:fadeUp .35s both;
+}
+.fc-site .globe{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(56,230,255,.1);color:var(--cyan);flex-shrink:0}
+.fc-site .fc-url{flex:1;font-size:12.5px;direction:ltr;text-align:left;word-break:break-all;color:#c9d6f5}
+.fc-del{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--muted);background:rgba(255,255,255,.04);transition:.2s;flex-shrink:0}
+.fc-del:hover{background:rgba(255,77,109,.18);color:#ff8aa0}
+
+/* Toast */
+#toast{
+  position:fixed;top:18px;left:50%;transform:translate(-50%,-140%);
+  z-index:100;padding:13px 20px;border-radius:14px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:9px;max-width:90vw;
+  background:rgba(16,22,40,.95);border:1.5px solid rgba(34,227,154,.5);
+  color:#7cf0c4;box-shadow:0 20px 40px -12px rgba(0,0,0,.8),0 0 20px -6px rgba(34,227,154,.5);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  transition:transform .45s cubic-bezier(.2,.9,.3,1.2);direction:rtl;
+}
+#toast.show{transform:translate(-50%,0)}
+#toast.error{border-color:rgba(255,77,109,.5);color:#ff9db0;box-shadow:0 20px 40px -12px rgba(0,0,0,.8),0 0 20px -6px rgba(255,77,109,.5)}
+#toast.info{border-color:rgba(79,157,255,.5);color:#9cc6ff;box-shadow:0 20px 40px -12px rgba(0,0,0,.8),0 0 20px -6px rgba(79,157,255,.5)}
+
+/* Settings */
+.settings-grid{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+.set-row .k{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.set-row .v{font-size:13px;font-weight:600;color:#eaf1ff;direction:ltr}
+.set-row .v.fa{direction:rtl}
+.logout-btn{
+  width:100%;padding:15px;border-radius:14px;background:rgba(255,77,109,.1);
+  border:1.5px solid rgba(255,77,109,.35);color:#ff9db0;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:9px;transition:.25s;
+}
+.logout-btn:hover{background:rgba(255,77,109,.18);box-shadow:0 0 22px -6px rgba(255,77,109,.6)}
+.logout-btn:active{transform:scale(.98)}
+.version-note{text-align:center;font-size:11px;color:#4d5a7a;margin-top:20px;letter-spacing:.5px;line-height:1.9}
+
+/* Responsive tweaks */
+@media(min-width:600px){
+  #dashboard{padding:26px 20px 50px}
+  .dash{max-width:560px}
+  .gauge-num{font-size:52px}
+}
+@media(max-width:360px){
+  .loc-item{padding:12px 4px}
+  .loc-item .flag{font-size:22px}
+  .user-item{padding:12px 2px}
+  .gauge-num{font-size:38px}
+  .status-cfg{font-size:17px}
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- ===================== SPLASH ===================== -->
+<div class="screen active" id="splash">
+  <div class="splash-inner">
+    <div class="logo-x">
+      <svg viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="gx" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4f9dff"/>
+            <stop offset="0.55" stop-color="#8a5cff"/>
+            <stop offset="1" stop-color="#38e6ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M22 24 L44 50 L22 76 H38 L50 60 L62 76 H78 L56 50 L78 24 H62 L50 40 L38 24 Z" fill="url(#gx)"/>
+        <circle cx="50" cy="50" r="3.4" fill="#fff" opacity="0.95"/>
+      </svg>
+    </div>
+    <div class="splash-title">X.VPN</div>
+    <div class="splash-sub">SECURE · PRIVATE · FAST</div>
+    <div class="loading-bar"><span></span></div>
+  </div>
+</div>
+
+<!-- ===================== WELCOME ===================== -->
+<div class="screen" id="welcome">
+  <div class="tech-deco" id="welcomeDeco"></div>
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <svg viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="gw" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4f9dff"/>
+            <stop offset="0.55" stop-color="#8a5cff"/>
+            <stop offset="1" stop-color="#38e6ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M22 24 L44 50 L22 76 H38 L50 60 L62 76 H78 L56 50 L78 24 H62 L50 40 L38 24 Z" fill="url(#gw)"/>
+      </svg>
+    </div>
+    <div class="brand-name">X.VPN</div>
+    <div class="brand-tag">پنل مدیریت حرفه‌ای سرویس VPN<br>امن، سریع و کاملاً اختصاصی</div>
+    <button class="enter-btn" id="enterBtn">
+      ورود به پنل
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== CONFIG SETUP ===================== -->
+<div class="screen" id="configScreen">
+  <div class="auth-wrap" style="padding-top:6px">
+    <div class="auth-logo" style="width:78px;height:78px;margin-bottom:8px">
+      <svg viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4f9dff"/>
+            <stop offset="0.55" stop-color="#8a5cff"/>
+            <stop offset="1" stop-color="#38e6ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M22 24 L44 50 L22 76 H38 L50 60 L62 76 H78 L56 50 L78 24 H62 L50 40 L38 24 Z" fill="url(#gc)"/>
+      </svg>
+    </div>
+    <div class="brand-name" style="font-size:22px">تنظیمات اولیه سرویس</div>
+    <div class="brand-tag" style="margin-bottom:22px">اطلاعات کانفیگ خود را برای اتصال به پنل وارد کنید</div>
+
+    <div class="panel-card">
+      <div class="card-title"><span class="dot"></span> لینک کانفیگ VLESS</div>
+      <div class="card-desc">لینک کامل VLESS خود را وارد کنید. لینک باید با <span style="color:var(--blue-neon);direction:ltr;display:inline-block">vless://</span> شروع شود.</div>
+      <div class="field">
+        <div class="input-wrap">
+          <textarea id="vlessInput" placeholder="vless://..." spellcheck="false" autocomplete="off"></textarea>
+          <button class="clear-btn" id="clearVless" title="پاک کردن" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="input-hint"><span id="vlessHint">پس از Paste بررسی خودکار انجام می‌شود</span></div>
+      </div>
+
+      <div class="card-title" style="margin-top:6px"><span class="dot" style="background:var(--purple);box-shadow:0 0 12px var(--purple)"></span> نام اختصاصی کانفیگ</div>
+      <div class="card-desc">نام اختصاصی کانفیگ خود را وارد کنید. (دقیقاً ۵ کاراکتر شامل حروف انگلیسی و عدد)</div>
+      <div class="field">
+        <div class="input-wrap">
+          <input id="nameInput" type="text" maxlength="5" placeholder="Abc12" spellcheck="false" autocomplete="off" autocapitalize="off" />
+          <button class="clear-btn" id="clearName" title="پاک کردن" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="input-hint"><span id="nameHint">حداقل یک حرف، حداکثر ۵ کاراکتر</span><span class="counter" id="nameCounter">0/5</span></div>
+      </div>
+
+      <div class="alert" id="configAlert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span id="configAlertText"></span>
+      </div>
+
+      <button class="primary-btn" id="verifyBtn" style="margin-top:6px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
+        شناسایی کانفیگ
+      </button>
+      <div style="text-align:center">
+        <button class="back-link" id="backToWelcome">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          بازگشت
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PROCESSING ===================== -->
+<div class="screen" id="processing">
+  <div class="proc-wrap">
+    <div class="radar">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <div class="sweep"></div>
+      <div class="core"></div>
+    </div>
+    <div class="proc-msg" id="procMsg">در حال بررسی ساختار کانفیگ...</div>
+    <div class="proc-pct" id="procPct">0%</div>
+    <div class="proc-bar"><span id="procBar"></span></div>
+    <div class="proc-steps" id="procSteps">
+      <div class="proc-step active"><span class="tick"></span> در حال بررسی ساختار کانفیگ</div>
+      <div class="proc-step"><span class="tick"></span> در حال اعتبارسنجی اطلاعات واردشده</div>
+      <div class="proc-step"><span class="tick"></span> در حال شناسایی سرویس</div>
+      <div class="proc-step"><span class="tick"></span> در حال آماده‌سازی پنل اختصاصی</div>
+      <div class="proc-step"><span class="tick"></span> در حال تکمیل فرآیند</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div class="screen" id="dashboard">
+  <div class="dash">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-brand">
+        <svg viewBox="0 0 100 100" fill="none">
+          <defs>
+            <linearGradient id="gd" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4f9dff"/>
+              <stop offset="0.55" stop-color="#8a5cff"/>
+              <stop offset="1" stop-color="#38e6ff"/>
+            </linearGradient>
+          </defs>
+          <path d="M22 24 L44 50 L22 76 H38 L50 60 L62 76 H78 L56 50 L78 24 H62 L50 40 L38 24 Z" fill="url(#gd)"/>
+        </svg>
+        <div>
+          <div class="nm">X.VPN</div>
+          <div class="cfg" id="topCfgName">—</div>
+        </div>
+      </div>
+      <button class="icon-btn" id="settingsJump" title="تنظیمات">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <!-- Status card -->
+    <div class="status-card">
+      <div class="status-row">
+        <div class="status-info">
+          <div class="status-label">نام کانفیگ</div>
+          <div class="status-cfg" id="statusCfg">—</div>
+          <div class="status-conn"><span class="pd"></span> متصل</div>
+        </div>
+        <div class="status-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Speed gauge -->
+    <div class="gauge-card">
+      <div class="gauge-head">
+        <div>
+          <div class="gauge-title">سرعت سرویس</div>
+          <div class="gauge-sub">پهنای باند لحظه‌ای</div>
+        </div>
+        <div class="gauge-sub" id="speedStatus">Mbps</div>
+      </div>
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 200 120">
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#38e6ff"/>
+              <stop offset="0.5" stop-color="#4f9dff"/>
+              <stop offset="1" stop-color="#8a5cff"/>
+            </linearGradient>
+            <filter id="gGlow"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="12" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" filter="url(#gGlow)" stroke-dasharray="251.3" stroke-dashoffset="251.3" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.3,1)"/>
+          <g id="gaugeTicks"></g>
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-num" id="speedNum">0</div>
+          <div class="gauge-unit">Mbps</div>
+        </div>
+      </div>
+      <div class="gauge-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+    </div>
+
+    <!-- Refresh -->
+    <button class="refresh-btn" id="refreshBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span id="refreshLabel">به‌روزرسانی سرور</span>
+    </button>
+    <div class="refresh-hint">با به‌روزرسانی سرور، تنظیمات اتصال مجدداً بارگذاری شده و می‌توانید از عملکرد بهینه‌تر سرویس بهره‌مند شوید.</div>
+
+    <!-- Location -->
+    <div class="sec-card" style="margin-top:16px">
+      <div class="sec-head">
+        <div class="sec-icon purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">موقعیت سرور</div>
+          <div class="sec-sub">کشور اتصال خود را انتخاب کنید</div>
+        </div>
+      </div>
+      <div class="loc-grid" id="locGrid">
+        <button class="loc-item active" data-loc="Germany">
+          <span class="flag">🇩🇪</span><span class="nm">آلمان</span><span class="nm-en">Germany</span>
+        </button>
+        <button class="loc-item" data-loc="United States">
+          <span class="flag">🇺🇸</span><span class="nm">آمریکا</span><span class="nm-en">United States</span>
+        </button>
+        <button class="loc-item" data-loc="Netherlands">
+          <span class="flag">🇳🇱</span><span class="nm">هلند</span><span class="nm-en">Netherlands</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- IP -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-icon cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 10h.01M10 10h.01"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">مدیریت آدرس IP</div>
+          <div class="sec-sub">نوع آدرس آی‌پی خود را انتخاب کنید</div>
+        </div>
+      </div>
+      <div class="ip-grid" id="ipGrid">
+        <button class="ip-item active" data-ip="Static">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="nm">آی‌پی ثابت</span><span class="en">Static IP</span>
+        </button>
+        <button class="ip-item" data-ip="Dynamic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/><path d="M8 12h8M12 8v8" opacity=".4"/></svg>
+          <span class="nm">آی‌پی متغیر</span><span class="en">Dynamic IP</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">مدیریت کاربران هم‌زمان</div>
+          <div class="sec-sub">حداکثر تعداد دستگاه‌هایی که می‌توانند هم‌زمان استفاده کنند</div>
+        </div>
+      </div>
+      <div class="users-grid" id="usersGrid">
+        <button class="user-item active" data-users="1"><span class="u-num"</span>دیفالت</span><span class="u-lbl">کاربر</span></button>
+        <button class="user-item" data-users="2"><span class="u-num">2</span><span class="u-lbl">کاربر</span></button>
+        <button class="user-item" data-users="3"><span class="u-num">3</span><span class="u-lbl">کاربر</span></button>
+        <button class="user-item" data-users="4"><span class="u-num">4</span><span class="u-lbl">کاربر</span></button>
+        <button class="user-item" data-users="5"><span class="u-num">5</span><span class="u-lbl">کاربر</span></button>
+      </div>
+    </div>
+
+    <!-- Apps -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-icon purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">مدیریت محدودیت اپلیکیشن‌ها</div>
+          <div class="sec-sub">اپلیکیشن‌های مورد نظر را محدود کنید</div>
+        </div>
+      </div>
+      <div class="app-list" id="appList"></div>
+    </div>
+
+    <!-- Family -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-icon cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">کنترل خانواده</div>
+          <div class="sec-sub">با استفاده از این قابلیت می‌توانید دسترسی به وب‌سایت‌های دلخواه را در لیست محدودیت قرار دهید.</div>
+        </div>
+      </div>
+      <div class="fc-input-wrap">
+        <input class="fc-input" id="fcInput" type="text" placeholder="مثلاً youtube.com" spellcheck="false" autocomplete="off" />
+        <button class="fc-add" id="fcAdd">افزودن</button>
+      </div>
+      <div class="fc-list" id="fcList"></div>
+    </div>
+
+    <!-- Settings -->
+    <div class="sec-card" id="settingsCard">
+      <div class="sec-head">
+        <div class="sec-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div>
+          <div class="sec-title">تنظیمات و اطلاعات سرویس</div>
+          <div class="sec-sub">خلاصه وضعیت و گزینه خروج</div>
+        </div>
+      </div>
+      <div class="settings-grid">
+        <div class="set-row"><span class="k">نسخه برنامه</span><span class="v">1.0.0</span></div>
+        <div class="set-row"><span class="k">نام کانفیگ</span><span class="v" id="setCfgName">—</span></div>
+        <div class="set-row"><span class="k">لوکیشن فعال</span><span class="v fa" id="setLocation">آلمان</span></div>
+        <div class="set-row"><span class="k">تعداد کاربران</span><span class="v fa" id="setUsers">1 کاربر</span></div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        خروج از سرویس
+      </button>
+    </div>
+
+    <div class="version-note">X.VPN — نسخه  1.0.0<br> توسط پارسا ایکس.</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ===================== STATE ===================== */
+const STORAGE_KEY = 'x_vpn_state_v1';
+const DEFAULT_STATE = {
+  vless: '',
+  configName: '',
+  registered: false,
+  ipType: 'Static',
+  location: 'Germany',
+  users: 1,
+  apps: { Instagram:false, YouTube:false, Twitch:false, Telegram:false, Chrome:false },
+  familySites: [],
+  speed: 0
+};
+let state = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return { ...DEFAULT_STATE, apps:{...DEFAULT_STATE.apps}, familySites:[] };
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_STATE,
+      ...parsed,
+      apps: { ...DEFAULT_STATE.apps, ...(parsed.apps||{}) },
+      familySites: Array.isArray(parsed.familySites) ? parsed.familySites : []
+    };
+  }catch(e){ return { ...DEFAULT_STATE, apps:{...DEFAULT_STATE.apps}, familySites:[] }; }
+}
+function saveState(){
+  try{
+    // Do not persist raw vless in plain public view? Requirement says persist. Keep but never log.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+/* ===================== SCREEN NAV ===================== */
+const screens = ['splash','welcome','configScreen','processing','dashboard'];
+function showScreen(id, cb){
+  const current = document.querySelector('.screen.active');
+  const target = document.getElementById(id);
+  if(!target) return;
+  if(current && current.id === id) return;
+  if(current){
+    current.classList.add('leaving');
+    setTimeout(()=>{
+      current.classList.remove('leaving','active');
+      target.classList.add('active');
+      target.scrollTop = 0;
+      if(cb) cb();
+    }, 380);
+  } else {
+    target.classList.add('active');
+    if(cb) cb();
+  }
+}
+
+/* ===================== TOAST ===================== */
+let toastTimer=null;
+function toast(msg, type='success'){
+  const el = document.getElementById('toast');
+  el.textContent = '';
+  const icon = document.createElement('span');
+  icon.innerHTML = type==='error'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>'
+    : type==='info'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  icon.style.display='flex';
+  el.appendChild(icon);
+  const txt = document.createElement('span');
+  txt.textContent = msg;
+  el.appendChild(txt);
+  el.className = type==='error'?'error':type==='info'?'info':'';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+/* ===================== SPLASH FLOW ===================== */
+function boot(){
+  state = loadState();
+  // Animate splash then route
+  setTimeout(()=>{
+    if(state.registered && state.vless && state.configName){
+      // go to dashboard after processing quick animation
+      showScreen('processing', ()=>{
+        runProcessing(true, ()=>{ renderDashboard(); showScreen('dashboard'); });
+      });
+    } else {
+      showScreen('welcome', decorateWelcome);
+    }
+  }, 2200);
+}
+
+/* ===================== WELCOME DECO ===================== */
+function decorateWelcome(){
+  const deco = document.getElementById('welcomeDeco');
+  if(deco.childElementCount>0) return;
+  for(let i=0;i<26;i++){
+    const s = document.createElement('i');
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    s.style.animationDuration = (3+Math.random()*4)+'s';
+    deco.appendChild(s);
+  }
+}
+
+/* ===================== CONFIG FORM LOGIC ===================== */
+const vlessInput = document.getElementById('vlessInput');
+const nameInput = document.getElementById('nameInput');
+const nameCounter = document.getElementById('nameCounter');
+const nameHint = document.getElementById('nameHint');
+const vlessHint = document.getElementById('vlessHint');
+const configAlert = document.getElementById('configAlert');
+const configAlertText = document.getElementById('configAlertText');
+const verifyBtn = document.getElementById('verifyBtn');
+
+function hideConfigAlert(){ configAlert.classList.remove('show','error','success'); }
+
+function updateNameMeta(){
+  const v = nameInput.value;
+  nameCounter.textContent = v.length + '/5';
+  nameCounter.classList.remove('ok','bad');
+  if(v.length===5) nameCounter.classList.add('ok');
+  else nameCounter.classList.add('bad');
+  const valid = /^[A-Za-z0-9]{5}$/.test(v) && /[A-Za-z]/.test(v);
+  if(v.length===0){ nameHint.textContent='حداقل یک حرف، حداکثر ۵ کاراکتر'; nameHint.style.color=''; }
+  else if(!valid){ nameHint.textContent='نام باید ۵ کاراکتر شامل حروف و عدد باشد'; nameHint.style.color='var(--red)'; }
+  else { nameHint.textContent='نام معتبر است'; nameHint.style.color='var(--green)'; }
+}
+
+function updateVlessMeta(){
+  const v = vlessInput.value.trim();
+  if(!v){ vlessHint.textContent='پس از Paste بررسی خودکار انجام می‌شود'; vlessHint.classList.remove('err'); }
+  else if(!v.startsWith('vless://')){ vlessHint.textContent='لینک باید با vless:// شروع شود'; vlessHint.classList.add('err'); }
+  else { vlessHint.textContent='ساختار لینک معتبر به نظر می‌رسد'; vlessHint.classList.remove('err'); }
+}
+
+vlessInput.addEventListener('input', ()=>{ hideConfigAlert(); updateVlessMeta(); });
+nameInput.addEventListener('input', ()=>{
+  hideConfigAlert();
+  nameInput.value = nameInput.value.replace(/[^A-Za-z0-9]/g,'').slice(0,5);
+  updateNameMeta();
+});
+document.getElementById('clearVless').addEventListener('click', ()=>{ vlessInput.value=''; updateVlessMeta(); hideConfigAlert(); });
+document.getElementById('clearName').addEventListener('click', ()=>{ nameInput.value=''; updateNameMeta(); hideConfigAlert(); });
+
+function showConfigAlert(msg, type='error'){
+  configAlertText.textContent = msg;
+  configAlert.classList.remove('error','success');
+  configAlert.classList.add('show', type);
+  if(type==='error'){
+    const icon = configAlert.querySelector('svg');
+    if(icon) icon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>';
+  }
+}
+function showConfigSuccess(msg){
+  configAlertText.textContent = msg;
+  configAlert.classList.remove('error','success');
+  configAlert.classList.add('show','success');
+  const icon = configAlert.querySelector('svg');
+  if(icon) icon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+}
+
+/* ===================== VERIFY ===================== */
+function validateConfig(vless, name){
+  if(!vless) return {ok:false, msg:'لطفاً لینک VLESS را وارد کنید.'};
+  if(!vless.startsWith('vless://')) return {ok:false, msg:'لینک کانفیگ نامعتبر است. لینک باید با vless:// شروع شود.'};
+  if(vless.length < 15) return {ok:false, msg:'لینک کانفیگ ناقص است. لطفاً لینک کامل را وارد کنید.'};
+  if(!name) return {ok:false, msg:'لطفاً نام اختصاصی کانفیگ را وارد کنید.'};
+  if(name.length !== 5) return {ok:false, msg:'نام کانفیگ باید دقیقاً ۵ کاراکتر باشد.'};
+  if(!/^[A-Za-z0-9]+$/.test(name)) return {ok:false, msg:'نام کانفیگ فقط می‌تواند شامل حروف انگلیسی و اعداد باشد.'};
+  if(!/[A-Za-z]/.test(name)) return {ok:false, msg:'نام کانفیگ باید حداقل یک حرف انگلیسی داشته باشد.'};
+  // case-sensitive substring search in raw text
+  if(!vless.includes(name)) return {ok:false, msg:'کانفیگ در سرور وجود ندارد! از صحت اطلاعات واردشده اطمینان حاصل کنید.'};
+  return {ok:true};
+}
+
+verifyBtn.addEventListener('click', ()=>{
+  hideConfigAlert();
+  const vless = vlessInput.value.trim();
+  const name = nameInput.value.trim();
+  const res = validateConfig(vless, name);
+  if(!res.ok){
+    showConfigAlert(res.msg, 'error');
+    return;
+  }
+  // save config before processing (only after verify passes)
+  state.vless = vless;
+  state.configName = name;
+  saveState();
+  showConfigSuccess('کانفیگ شما با موفقیت شناسایی شد! در حال ورود به پنل...');
+  setTimeout(()=>{
+    showScreen('processing', ()=>{
+      runProcessing(false, ()=>{
+        state.registered = true;
+        if(!state.speed) state.speed = 0;
+        saveState();
+        renderDashboard();
+        showScreen('dashboard');
+      });
+    });
+  }, 900);
+});
+
+document.getElementById('backToWelcome').addEventListener('click', ()=>{
+  showScreen('welcome', decorateWelcome);
+});
+
+/* ===================== PROCESSING ===================== */
+const procMsgs = [
+  'در حال بررسی ساختار کانفیگ...',
+  'در حال اعتبارسنجی اطلاعات واردشده...',
+  'در حال شناسایی سرویس...',
+  'در حال آماده‌سازی پنل اختصاصی...',
+  'در حال تکمیل فرآیند...'
+];
+let procRunning = false;
+function runProcessing(fast, onDone){
+  if(procRunning) return;
+  procRunning = true;
+  const msgEl = document.getElementById('procMsg');
+  const pctEl = document.getElementById('procPct');
+  const barEl = document.getElementById('procBar');
+  const steps = Array.from(document.querySelectorAll('#procSteps .proc-step'));
+  steps.forEach(s=>{ s.classList.remove('done','active'); });
+  steps[0].classList.add('active');
+  let idx = 0;
+  let pct = 0;
+  const totalTime = fast ? 1400 : 3400;
+  const stepTime = totalTime / procMsgs.length;
+
+  msgEl.textContent = procMsgs[0];
+  pctEl.textContent = '0%';
+  barEl.style.width = '0%';
+  barEl.style.transition = 'none';
+  requestAnimationFrame(()=>{ barEl.style.transition = 'width .35s ease'; });
+
+  const tick = setInterval(()=>{
+    pct += Math.random()*8 + 3;
+    if(pct >= 100){ pct = 100; }
+    barEl.style.width = pct + '%';
+    pctEl.textContent = Math.floor(pct) + '%';
+    if(pct>=100){
+      clearInterval(tick);
+    }
+  }, 90);
+
+  const stepTick = setInterval(()=>{
+    steps[idx].classList.remove('active');
+    steps[idx].classList.add('done');
+    idx++;
+    if(idx < steps.length){
+      steps[idx].classList.add('active');
+      msgEl.textContent = procMsgs[idx];
+    } else {
+      clearInterval(stepTick);
+      clearInterval(tick);
+      pctEl.textContent = '100%';
+      barEl.style.width = '100%';
+      msgEl.textContent = 'سرویس شما با موفقیت شناسایی شد!';
+      setTimeout(()=>{
+        procRunning = false;
+        if(onDone) onDone();
+      }, fast ? 500 : 750);
+    }
+  }, stepTime);
+}
+
+/* ===================== DASHBOARD RENDER ===================== */
+const APPS = [
+  { key:'Instagram', name:'Instagram', cls:'ig', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .4 1.4.9.5.4.7.8.9 1.4.1.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.4 1-.9 1.4-.4.5-.8.7-1.4.9-.4.1-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.4-1.4-.9-.5-.4-.7-.8-.9-1.4-.1-.4-.3-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.4-1 .9-1.4.4-.5.8-.7 1.4-.9.4-.1 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1zM12 7.1a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8zm0 8.1a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zm6.3-8.3a1.1 1.1 0 1 1-2.3 0 1.1 1.1 0 0 1 2.3 0z"/></svg>'},
+  { key:'YouTube', name:'YouTube', cls:'yt', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>'},
+  { key:'Twitch', name:'Twitch', cls:'tw', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.6 4.6v6.6h2.2V4.6h-2.2zm-5.8 0v6.6h2.2V4.6H5.8zM4 0L0 4v16h5v4l4-4h3l8-8V0H4zm16 11l-3 3h-4l-4 4v-4H5V2h15v9z"/></svg>'},
+  { key:'Telegram', name:'Telegram', cls:'tg', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.9 3.4l-3.6 17c-.3 1.2-1 1.5-2 .9l-5.5-4-2.7 2.6c-.3.3-.5.5-1.1.5l.4-5.6 10.2-9.2c.4-.4-.1-.6-.7-.2L6.2 13.3l-5.4-1.7c-1.2-.4-1.2-1.2.2-1.7L22.2 1.7c1-.4 1.9.2 1.7 1.7z"/></svg>'},
+  { key:'Chrome', name:'Chrome', cls:'ch', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity=".25"/><path d="M12 2a10 10 0 0 0-8.7 5H12a5 5 0 0 1 4.6 3l3.9-6.7A9.9 9.9 0 0 0 12 2zm10 10c0-1.3-.3-2.6-.7-3.8l-4.8 8.3A5 5 0 0 1 13.9 17h7.8c.2-.9.3-1.9.3-2.8zM3.4 8.1A10 10 0 0 0 12 22c.7 0 1.3-.1 2-.2l-4-6.9a5 5 0 0 1-2-3H3.4z"/></svg>'}
+];
+
+function renderApps(){
+  const list = document.getElementById('appList');
+  list.innerHTML = '';
+  APPS.forEach(app=>{
+    const blocked = !!state.apps[app.key];
+    const row = document.createElement('div');
+    row.className = 'app-row' + (blocked?' blocked':'');
+    row.innerHTML = `
+      <div class="app-ico ${app.cls}">${app.icon}</div>
+      <div class="app-info">
+        <div class="app-name">${app.name}</div>
+        <div class="app-status">${blocked?'در حال محدودیت':'آزاد'}</div>
+      </div>
+      <div class="switch ${blocked?'on':''}" data-app="${app.key}" role="switch" aria-checked="${blocked}"></div>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.switch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      const key = sw.dataset.app;
+      state.apps[key] = !state.apps[key];
+      saveState();
+      const row = sw.closest('.app-row');
+      const st = row.querySelector('.app-status');
+      if(state.apps[key]){ row.classList.add('blocked'); sw.classList.add('on'); st.textContent='در حال محدودیت'; sw.setAttribute('aria-checked','true'); toast(appLabel(key)+' محدود شد','info'); }
+      else { row.classList.remove('blocked'); sw.classList.remove('on'); st.textContent='آزاد'; sw.setAttribute('aria-checked','false'); toast(appLabel(key)+' آزاد شد'); }
+    });
+  });
+}
+function appLabel(k){ return k; }
+
+function renderFamily(){
+  const list = document.getElementById('fcList');
+  list.innerHTML = '';
+  if(state.familySites.length===0){
+    const e = document.createElement('div');
+    e.className = 'fc-empty';
+    e.textContent = 'هنوز سایتی به لیست محدودیت اضافه نشده است.';
+    list.appendChild(e);
+    return;
+  }
+  state.familySites.forEach((site, i)=>{
+    const div = document.createElement('div');
+    div.className = 'fc-site';
+    div.innerHTML = `
+      <span class="globe"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg></span>
+      <span class="fc-url"></span>
+      <button class="fc-del" title="حذف"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    `;
+    div.querySelector('.fc-url').textContent = site;
+    div.querySelector('.fc-del').addEventListener('click', ()=>{
+      state.familySites.splice(i,1);
+      saveState();
+      renderFamily();
+      toast('سایت حذف شد');
+    });
+    list.appendChild(div);
+  });
+}
+
+function validateUrl(url){
+  const cleaned = url.trim();
+  if(!cleaned) return {ok:false, msg:'لطفاً آدرس سایت را وارد کنید.'};
+  if(/\s/.test(cleaned)) return {ok:false, msg:'آدرس نباید شامل فاصله باشد.'};
+  const withProto = /^https?:\/\//i.test(cleaned) ? cleaned : 'http://' + cleaned;
+  try{
+    const u = new URL(withProto);
+    if(!u.hostname.includes('.') || u.hostname.length<4) return {ok:false, msg:'آدرس سایت معتبر نیست.'};
+    return {ok:true, host: u.hostname.toLowerCase().replace(/^www\./,'')};
+  }catch(e){ return {ok:false, msg:'آدرس سایت معتبر نیست.'}; }
+}
+
+document.getElementById('fcAdd').addEventListener('click', ()=>{
+  const input = document.getElementById('fcInput');
+  const v = input.value;
+  const res = validateUrl(v);
+  if(!res.ok){ toast(res.msg,'error'); return; }
+  if(state.familySites.includes(res.host)){ toast('این آدرس قبلاً اضافه شده است','error'); return; }
+  state.familySites.push(res.host);
+  saveState();
+  input.value='';
+  renderFamily();
+  toast('آدرس با موفقیت اضافه شد');
+});
+document.getElementById('fcInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ e.preventDefault(); document.getElementById('fcAdd').click(); }
+});
+
+function locLabel(loc){
+  return loc==='Germany'?'آلمان':loc==='United States'?'آمریکا':loc==='Netherlands'?'هلند':loc;
+}
+
+function renderDashboard(){
+  document.getElementById('topCfgName').textContent = state.configName || '—';
+  document.getElementById('statusCfg').textContent = state.configName || '—';
+  document.getElementById('setCfgName').textContent = state.configName || '—';
+  document.getElementById('setLocation').textContent = locLabel(state.location);
+  document.getElementById('setUsers').textContent = state.users + ' کاربر';
+
+  // locations
+  document.querySelectorAll('#locGrid .loc-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.loc === state.location);
+  });
+  // IP
+  document.querySelectorAll('#ipGrid .ip-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.ip === state.ipType);
+  });
+  // users
+  document.querySelectorAll('#usersGrid .user-item').forEach(el=>{
+    el.classList.toggle('active', parseInt(el.dataset.users,10) === state.users);
+  });
+  renderApps();
+  renderFamily();
+  drawGaugeTicks();
+  // speed
+  if(!state.speed || state.speed < 84 || state.speed > 97){
+    state.speed = randSpeed();
+    saveState();
+  }
+  animateSpeedTo(state.speed);
+}
+
+function randSpeed(){ return Math.floor(Math.random()*(97-84+1)) + 84; }
+
+function drawGaugeTicks(){
+  const g = document.getElementById('gaugeTicks');
+  g.innerHTML = '';
+  const cx=100, cy=100, r=64;
+  for(let i=0;i<=10;i++){
+    const ang = Math.PI * (i/10);
+    const x1 = cx - r*Math.cos(ang);
+    const y1 = cy - r*Math.sin(ang);
+    const x2 = cx - (r-6)*Math.cos(ang);
+    const y2 = cy - (r-6)*Math.sin(ang);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1.toFixed(1)); line.setAttribute('y1',y1.toFixed(1));
+    line.setAttribute('x2',x2.toFixed(1)); line.setAttribute('y2',y2.toFixed(1));
+    line.setAttribute('stroke','rgba(255,255,255,.18)');
+    line.setAttribute('stroke-width','1.5');
+    line.setAttribute('stroke-linecap','round');
+    g.appendChild(line);
+  }
+}
+
+let speedAnimId = null;
+function animateSpeedTo(target){
+  const numEl = document.getElementById('speedNum');
+  const arc = document.getElementById('gaugeArc');
+  const totalDash = 251.3;
+  const maxSpeed = 100;
+  // animate number
+  if(speedAnimId) cancelAnimationFrame(speedAnimId);
+  const start = performance.now();
+  const from = 0;
+  const dur = 1100;
+  function step(t){
+    const p = Math.min(1,(t-start)/dur);
+    const eased = 1 - Math.pow(1-p,3);
+    const val = from + (target-from)*eased;
+    numEl.textContent = Math.round(val);
+    // arc
+    const frac = Math.min(1, val/maxSpeed);
+    arc.style.strokeDashoffset = totalDash * (1 - frac);
+    if(p<1) speedAnimId = requestAnimationFrame(step);
+    else {
+      numEl.textContent = target;
+      arc.style.strokeDashoffset = totalDash * (1 - Math.min(1,target/maxSpeed));
+    }
+  }
+  speedAnimId = requestAnimationFrame(step);
+}
+
+/* ===================== DASHBOARD INTERACTIONS ===================== */
+// location
+document.querySelectorAll('#locGrid .loc-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const loc = el.dataset.loc;
+    if(loc === state.location) return;
+    state.location = loc;
+    saveState();
+    document.querySelectorAll('#locGrid .loc-item').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('setLocation').textContent = locLabel(loc);
+    toast('در حال تغییر موقعیت سرور...','info');
+    setTimeout(()=>toast('در حال برقراری ارتباط با لوکیشن جدید...','info'), 900);
+    setTimeout(()=>toast('موقعیت سرور با موفقیت تغییر کرد'), 1900);
+  });
+});
+
+// IP
+document.querySelectorAll('#ipGrid .ip-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const ip = el.dataset.ip;
+    if(ip === state.ipType) return;
+    state.ipType = ip;
+    saveState();
+    document.querySelectorAll('#ipGrid .ip-item').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    toast(ip==='Static'?'آی‌پی ثابت فعال شد':'آی‌پی متغیر فعال شد');
+  });
+});
+
+// users
+document.querySelectorAll('#usersGrid .user-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const n = parseInt(el.dataset.users,10);
+    if(n === state.users) return;
+    state.users = n;
+    saveState();
+    document.querySelectorAll('#usersGrid .user-item').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('setUsers').textContent = n + ' کاربر';
+    toast('تعداد کاربران به ' + n + ' تغییر یافت','info');
+  });
+});
+
+// refresh server
+const refreshBtn = document.getElementById('refreshBtn');
+const refreshLabel = document.getElementById('refreshLabel');
+let refreshing = false;
+refreshBtn.addEventListener('click', ()=>{
+  if(refreshing) return;
+  refreshing = true;
+  refreshBtn.classList.add('loading');
+  refreshBtn.disabled = true;
+  refreshLabel.textContent = 'در حال به‌روزرسانی سرور...';
+  toast('در حال به‌روزرسانی سرور...','info');
+
+  setTimeout(()=>{
+    const newSpeed = randSpeed();
+    state.speed = newSpeed;
+    saveState();
+    animateSpeedTo(newSpeed);
+    refreshBtn.classList.remove('loading');
+    refreshBtn.disabled = false;
+    refreshLabel.textContent = 'به‌روزرسانی سرور';
+    refreshing = false;
+    toast('سرور با موفقیت به‌روزرسانی شد — سرعت جدید: ' + newSpeed + ' Mbps');
+  }, 2200);
+});
+
+// settings jump
+document.getElementById('settingsJump').addEventListener('click', ()=>{
+  const el = document.getElementById('settingsCard');
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+// logout
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  showScreen('welcome', decorateWelcome);
+  toast('از پنل خارج شدید. اطلاعات سرویس حفظ شده است.','info');
+});
+
+/* ===================== WELCOME BUTTON ===================== */
+document.getElementById('enterBtn').addEventListener('click', ()=>{
+  if(state.registered && state.vless && state.configName){
+    // already registered — go directly to dashboard
+    showScreen('processing', ()=>{
+      runProcessing(true, ()=>{ renderDashboard(); showScreen('dashboard'); });
+    });
+  } else {
+    showScreen('configScreen');
+  }
+});
+
+/* ===================== INIT ===================== */
+window.addEventListener('DOMContentLoaded', ()=>{
+  state = loadState();
+  boot();
+});
+
+// fix vh issues on mobile
+function setVH(){
+  document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px');
+}
+setVH();
+window.addEventListener('resize', setVH);
+</script>
+</body>
+</html>
